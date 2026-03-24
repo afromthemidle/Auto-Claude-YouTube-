@@ -1,0 +1,50 @@
+# Variables de entorno (contienen claves API)
+.env
+.env.local
+
+# Credenciales de YouTube (OAuth2)
+credentials/
+!credentials/.gitkeep
+
+# Archivos generados (audio, video, imágenes)
+output/
+!output/.gitkeep
+
+# Logs
+logs/
+!logs/.gitkeep
+
+# Base de datos
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# Entorno virtual
+venv/
+.venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Assets generados
+assets/podcast_cover.jpg

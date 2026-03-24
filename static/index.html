@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌿 Podcast Vegetariano - Panel de Control</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-dark:      #0D1F0F;
+      --bg-mid:       #1A3A1C;
+      --bg-card:      #1E3A20;
+      --accent:       #4CAF50;
+      --accent-dark:  #388E3C;
+      --accent-light: #81C784;
+      --gold:         #FFD700;
+      --text:         #E8F5E9;
+      --text-muted:   #A5D6A7;
+      --error:        #EF5350;
+      --warn:         #FF9800;
+      --border:       #2E5030;
+      --shadow:       0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--bg-mid), var(--bg-dark));
+      border-bottom: 3px solid var(--accent);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    header .logo { font-size: 3rem; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: var(--text); }
+    header h1 span { color: var(--accent); }
+    header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
+    header .status-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--accent); display: inline-block;
+      margin-right: 6px; animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── Layout ── */
+    main { max-width: 1400px; margin: 0 auto; padding: 30px 40px; }
+
+    /* ── Grid de tarjetas de estado ── */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-card .icon { font-size: 2rem; margin-bottom: 8px; }
+    .stat-card .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .stat-card .value { font-size: 1.3rem; font-weight: 700; margin-top: 4px; }
+    .stat-card .value.ok { color: var(--accent); }
+    .stat-card .value.warn { color: var(--warn); }
+    .stat-card .value.error { color: var(--error); }
+
+    /* ── Panel de acciones ── */
+    .actions-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+    }
+    .actions-panel h2 { font-size: 1.1rem; color: var(--accent-light); margin-bottom: 16px; }
+    .actions-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--bg-mid); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: var(--error); color: #fff; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Toast notifications ── */
+    #toast-container {
+      position: fixed; top: 20px; right: 20px;
+      z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+    }
+    .toast {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 20px;
+      min-width: 300px; box-shadow: var(--shadow);
+      animation: slideIn 0.3s ease;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .toast.success { border-left: 4px solid var(--accent); }
+    .toast.error { border-left: 4px solid var(--error); }
+    .toast.info { border-left: 4px solid #2196F3; }
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ── Progress de generación ── */
+    #generation-progress {
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 30px;
+      display: none;
+    }
+    #generation-progress h3 { color: var(--accent); margin-bottom: 12px; }
+    .progress-steps { display: flex; flex-direction: column; gap: 8px; }
+    .step {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 12px; border-radius: 8px;
+      color: var(--text-muted); font-size: 0.9rem;
+    }
+    .step.active { background: rgba(76,175,80,0.1); color: var(--text); }
+    .step.done { color: var(--accent-light); }
+    .step .step-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+
+    /* ── Tabla de episodios ── */
+    .episodes-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .episodes-panel .panel-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .episodes-panel h2 { font-size: 1.1rem; color: var(--accent-light); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-mid);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(76,175,80,0.05); }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .status-published { background: rgba(76,175,80,0.2); color: var(--accent); }
+    .status-generating { background: rgba(255,152,0,0.2); color: var(--warn); }
+    .status-uploading { background: rgba(33,150,243,0.2); color: #64B5F6; }
+    .status-error { background: rgba(239,83,80,0.2); color: var(--error); }
+    .status-pending { background: rgba(255,255,255,0.1); color: var(--text-muted); }
+
+    .yt-link {
+      color: var(--accent);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+    .yt-link:hover { text-decoration: underline; }
+
+    .ep-number {
+      background: var(--accent);
+      color: var(--bg-dark);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    /* ── Modal de guión ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { color: var(--accent-light); }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .modal-close:hover { background: var(--bg-mid); color: var(--text); }
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      line-height: 1.7;
+      color: var(--text);
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+    }
+
+    /* ── Logs ── */
+    .logs-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-top: 30px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .logs-panel .panel-header {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logs-panel h2 { font-size: 1rem; color: var(--accent-light); }
+    #log-container {
+      padding: 16px 24px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    #log-container .log-line { padding: 1px 0; }
+    #log-container .log-line.error { color: var(--error); }
+    #log-container .log-line.warn { color: var(--warn); }
+    #log-container .log-line.info { color: var(--text-muted); }
+    #log-container .log-line.success { color: var(--accent-light); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header { padding: 16px 20px; }
+      main { padding: 20px; }
+      .status-grid { grid-template-columns: repeat(2, 1fr); }
+      table { font-size: 0.8rem; }
+      td, th { padding: 10px 10px; }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .icon { font-size: 4rem; margin-bottom: 16px; }
+    .empty-state p { font-size: 1rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🌿</div>
+  <div>
+    <h1><span>Personajes Famosos Vegetarianos</span> del Mundo</h1>
+    <p><span class="status-dot"></span>Sistema de podcast automático para YouTube</p>
+  </div>
+</header>
+
+<main>
+  <!-- Estado del sistema -->
+  <div class="status-grid" id="status-grid">
+    <div class="stat-card">
+      <div class="icon">🤖</div>
+      <div class="label">Claude API</div>
+      <div class="value" id="stat-claude">...</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">🎙️</div>
+      <div class="label">ElevenLabs TTS</div>
+      <div class="value" id="stat-eleven">...</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">📺</div>
+      <div class="label">YouTube</div>
+      <div class="value" id="stat-yt">...</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">⏰</div>
+      <div class="label">Próxima generación</div>
+      <div class="value" id="stat-next" style="font-size:1rem">...</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">🎬</div>
+      <div class="label">Episodios publicados</div>
+      <div class="value" id="stat-episodes">...</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">🌍</div>
+      <div class="label">Horario programado</div>
+      <div class="value" id="stat-schedule" style="font-size:1.1rem">...</div>
+    </div>
+  </div>
+
+  <!-- Panel de acciones -->
+  <div class="actions-panel">
+    <h2>⚡ Acciones</h2>
+    <div class="actions-row">
+      <button class="btn btn-primary" id="btn-generate" onclick="triggerGeneration()">
+        <span>▶</span> Generar episodio ahora
+      </button>
+      <button class="btn btn-secondary" onclick="loadEpisodes()">
+        <span>↻</span> Actualizar lista
+      </button>
+      <button class="btn btn-secondary" onclick="loadLogs()">
+        <span>📋</span> Ver logs
+      </button>
+      <button class="btn btn-secondary" onclick="window.open('/docs', '_blank')">
+        <span>📖</span> API Docs
+      </button>
+    </div>
+  </div>
+
+  <!-- Progreso de generación -->
+  <div id="generation-progress">
+    <h3>⚙️ Generando episodio...</h3>
+    <div class="progress-steps">
+      <div class="step" id="step-1"><span class="step-icon">🎭</span> Seleccionando personaje vegetariano</div>
+      <div class="step" id="step-2"><span class="step-icon">✍️</span> Generando guión con Claude AI</div>
+      <div class="step" id="step-3"><span class="step-icon">🎙️</span> Convirtiendo texto a voz (ElevenLabs)</div>
+      <div class="step" id="step-4"><span class="step-icon">🖼️</span> Creando miniatura del episodio</div>
+      <div class="step" id="step-5"><span class="step-icon">🎬</span> Montando video con FFmpeg</div>
+      <div class="step" id="step-6"><span class="step-icon">📺</span> Publicando en YouTube</div>
+    </div>
+  </div>
+
+  <!-- Lista de episodios -->
+  <div class="episodes-panel">
+    <div class="panel-header">
+      <h2>📚 Episodios generados</h2>
+      <span id="episode-count" style="color: var(--text-muted); font-size: 0.85rem;"></span>
+    </div>
+    <div id="episodes-container">
+      <div class="empty-state">
+        <div class="icon">🎙️</div>
+        <p>Cargando episodios...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de logs -->
+  <div class="logs-panel" id="logs-panel" style="display:none">
+    <div class="panel-header">
+      <h2>📋 Logs del sistema</h2>
+      <button class="btn btn-secondary" onclick="hideLogs()" style="padding: 6px 14px; font-size: 0.8rem;">Cerrar</button>
+    </div>
+    <div id="log-container"></div>
+  </div>
+</main>
+
+<!-- Modal de guión -->
+<div class="modal-overlay" id="script-modal" style="display:none" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Guión del episodio</h3>
+      <button class="modal-close" onclick="closeScriptModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script>
+  let pollingInterval = null;
+  let generationActive = false;
+
+  // ── Utilidades ──────────────────────────────────────────
+  function showToast(message, type = 'info', duration = 4000) {
+    const container = document.getElementById('toast-container');
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${icons[type] || '📢'}</span><span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), duration);
+  }
+
+  // ── Estado del sistema ──────────────────────────────────
+  async function loadStatus() {
+    try {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+
+      const el = (id) => document.getElementById(id);
+
+      // Claude API
+      const claudeEl = el('stat-claude');
+      claudeEl.textContent = data.anthropic_configured ? '✓ Configurada' : '✗ Sin clave';
+      claudeEl.className = 'value ' + (data.anthropic_configured ? 'ok' : 'error');
+
+      // ElevenLabs
+      const elevenEl = el('stat-eleven');
+      elevenEl.textContent = data.elevenlabs_configured ? '✓ Configurada' : '✗ Sin clave';
+      elevenEl.className = 'value ' + (data.elevenlabs_configured ? 'ok' : 'error');
+
+      // YouTube
+      const ytEl = el('stat-yt');
+      ytEl.textContent = data.youtube_auth ? '✓ Conectado' : '✗ Sin auth';
+      ytEl.className = 'value ' + (data.youtube_auth ? 'ok' : 'warn');
+
+      // Próxima ejecución
+      el('stat-next').textContent = data.next_scheduled_run || 'N/A';
+
+      // Horario
+      el('stat-schedule').textContent = `Cada día a las ${data.schedule_time}`;
+
+      // Generación en curso
+      if (data.generation_running && !generationActive) {
+        startGenerationUI();
+      } else if (!data.generation_running && generationActive) {
+        stopGenerationUI();
+        loadEpisodes();
+      }
+    } catch (e) {
+      console.error('Error cargando estado:', e);
+    }
+  }
+
+  // ── Episodios ───────────────────────────────────────────
+  async function loadEpisodes() {
+    try {
+      const res = await fetch('/api/episodes');
+      const episodes = await res.json();
+      renderEpisodes(episodes);
+      document.getElementById('stat-episodes').textContent =
+        episodes.filter(e => e.status === 'published').length;
+    } catch (e) {
+      console.error('Error cargando episodios:', e);
+    }
+  }
+
+  function renderEpisodes(episodes) {
+    const container = document.getElementById('episodes-container');
+    const count = document.getElementById('episode-count');
+
+    count.textContent = `${episodes.length} episodio${episodes.length !== 1 ? 's' : ''}`;
+
+    if (!episodes.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">🌱</div>
+          <p>Aún no hay episodios. ¡Genera el primero!</p>
+        </div>`;
+      return;
+    }
+
+    const statusMap = {
+      published: 'status-published',
+      generating: 'status-generating',
+      uploading: 'status-uploading',
+      error: 'status-error',
+      pending: 'status-pending',
+    };
+    const statusLabel = {
+      published: '✅ Publicado',
+      generating: '⚙️ Generando',
+      uploading: '📤 Subiendo',
+      error: '❌ Error',
+      pending: '⏳ Pendiente',
+    };
+
+    const rows = episodes.map(ep => `
+      <tr>
+        <td><span class="ep-number">Ep. ${ep.episode_number}</span></td>
+        <td><strong>${ep.character_name}</strong></td>
+        <td>${ep.character_nationality || '-'}</td>
+        <td>${ep.character_profession || '-'}</td>
+        <td><span class="status-badge ${statusMap[ep.status] || ''}">${statusLabel[ep.status] || ep.status}</span></td>
+        <td>${ep.youtube_url
+          ? `<a class="yt-link" href="${ep.youtube_url}" target="_blank">▶ Ver video</a>`
+          : ep.error_message
+            ? `<span style="color:var(--error);font-size:0.8rem" title="${ep.error_message}">Ver error</span>`
+            : '-'
+        }</td>
+        <td>${ep.published_at ? formatDate(ep.published_at) : ep.created_at ? formatDate(ep.created_at) : '-'}</td>
+        <td>
+          ${ep.script
+            ? `<button class="btn btn-secondary" onclick="showScript(${ep.id})" style="padding:6px 12px;font-size:0.8rem">📄 Guión</button>`
+            : '-'}
+        </td>
+      </tr>
+    `).join('');
+
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Episodio</th>
+            <th>Personaje</th>
+            <th>Nacionalidad</th>
+            <th>Profesión</th>
+            <th>Estado</th>
+            <th>YouTube</th>
+            <th>Fecha</th>
+            <th>Guión</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  // ── Generación ──────────────────────────────────────────
+  async function triggerGeneration() {
+    const btn = document.getElementById('btn-generate');
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/generate', { method: 'POST' });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(data.detail || 'Error al iniciar generación', 'error');
+        btn.disabled = false;
+        return;
+      }
+
+      showToast('Generación iniciada. Esto puede tardar varios minutos...', 'info', 8000);
+      startGenerationUI();
+    } catch (e) {
+      showToast('Error de conexión', 'error');
+      btn.disabled = false;
+    }
+  }
+
+  function startGenerationUI() {
+    generationActive = true;
+    document.getElementById('generation-progress').style.display = 'block';
+    document.getElementById('btn-generate').disabled = true;
+
+    // Animar pasos secuencialmente (simulación visual)
+    const steps = [1, 2, 3, 4, 5, 6];
+    let current = 0;
+
+    function animateStep() {
+      if (!generationActive) return;
+      if (current > 0) {
+        document.getElementById(`step-${steps[current-1]}`).className = 'step done';
+        document.getElementById(`step-${steps[current-1]}`).querySelector('.step-icon').textContent = '✅';
+      }
+      if (current < steps.length) {
+        document.getElementById(`step-${steps[current]}`).className = 'step active';
+        current++;
+        // Tiempos aproximados por paso (en ms)
+        const delays = [5000, 15000, 60000, 5000, 120000, 30000];
+        setTimeout(animateStep, delays[current-1] || 30000);
+      }
+    }
+    animateStep();
+
+    // Polling para detectar cuando termina
+    if (pollingInterval) clearInterval(pollingInterval);
+    pollingInterval = setInterval(loadStatus, 5000);
+  }
+
+  function stopGenerationUI() {
+    generationActive = false;
+    document.getElementById('generation-progress').style.display = 'none';
+    document.getElementById('btn-generate').disabled = false;
+
+    // Resetear pasos
+    for (let i = 1; i <= 6; i++) {
+      const el = document.getElementById(`step-${i}`);
+      el.className = 'step';
+    }
+    const icons = ['🎭', '✍️', '🎙️', '🖼️', '🎬', '📺'];
+    icons.forEach((icon, i) => {
+      const el = document.getElementById(`step-${i+1}`);
+      if (el) el.querySelector('.step-icon').textContent = icon;
+    });
+
+    if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+    showToast('Proceso completado. Revisa la lista de episodios.', 'success', 6000);
+  }
+
+  // ── Guión modal ─────────────────────────────────────────
+  async function showScript(episodeId) {
+    try {
+      const res = await fetch(`/api/episodes/${episodeId}`);
+      const ep = await res.json();
+      document.getElementById('modal-title').textContent =
+        `Episodio ${ep.episode_number}: ${ep.character_name}`;
+      document.getElementById('modal-body').textContent = ep.script || 'Guión no disponible.';
+      document.getElementById('script-modal').style.display = 'flex';
+    } catch (e) {
+      showToast('Error cargando guión', 'error');
+    }
+  }
+
+  function closeScriptModal() {
+    document.getElementById('script-modal').style.display = 'none';
+  }
+
+  function closeModal(event) {
+    if (event.target === document.getElementById('script-modal')) {
+      closeScriptModal();
+    }
+  }
+
+  // ── Logs ────────────────────────────────────────────────
+  async function loadLogs() {
+    document.getElementById('logs-panel').style.display = 'block';
+    try {
+      const res = await fetch('/api/logs?lines=150');
+      const data = await res.json();
+      const container = document.getElementById('log-container');
+
+      container.innerHTML = data.logs.map(line => {
+        let cls = 'info';
+        if (line.includes('[ERROR]') || line.includes('Error') || line.includes('❌')) cls = 'error';
+        else if (line.includes('[WARNING]') || line.includes('warn')) cls = 'warn';
+        else if (line.includes('✅') || line.includes('exitosamente') || line.includes('publicado')) cls = 'success';
+        return `<div class="log-line ${cls}">${escapeHtml(line)}</div>`;
+      }).join('');
+
+      container.scrollTop = container.scrollHeight;
+    } catch (e) {
+      showToast('Error cargando logs', 'error');
+    }
+  }
+
+  function hideLogs() {
+    document.getElementById('logs-panel').style.display = 'none';
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ── Inicialización ───────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    loadStatus();
+    loadEpisodes();
+    setInterval(loadStatus, 10000); // Actualizar estado cada 10s
+  });
+
+  // Cerrar modal con Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeScriptModal();
+  });
+</script>
+</body>
+</html>
