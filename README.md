@@ -20,8 +20,8 @@ famoso               muy realista         de audio animado
 
 | Componente | Tecnología |
 |------------|-----------|
-| Guión / IA | Claude Opus (Anthropic) |
-| Voz realista | ElevenLabs Multilingual v2 |
+| Guión / IA | Claude Haiku (Anthropic) |
+| Voz realista | edge-tts - Microsoft Neural (gratuito) |
 | Video | FFmpeg (1920×1080 Full HD) |
 | Thumbnails | Pillow (Python) |
 | Publicación | YouTube Data API v3 |
@@ -124,7 +124,17 @@ El dashboard web permite:
 
 ### Cambiar la voz
 
-Edita `ELEVENLABS_VOICE_ID` en `.env`. Explora voces en [ElevenLabs Voice Library](https://elevenlabs.io/voice-library), filtrando por idioma español.
+Edita `TTS_VOICE` en `.env`. Todas las voces son gratuitas:
+
+```env
+TTS_VOICE=es-ES-AlvaroNeural    # España, masculino  ← por defecto
+TTS_VOICE=es-MX-JorgeNeural     # México, masculino
+TTS_VOICE=es-AR-TomasNeural     # Argentina, masculino
+TTS_VOICE=es-ES-ElviraNeural    # España, femenino
+TTS_VOICE=es-MX-DaliaNeural     # México, femenino
+```
+
+Ver todas las voces disponibles: `GET /api/voices`
 
 ### Cambiar el horario
 
@@ -148,8 +158,9 @@ Edita `SEED_CHARACTERS` en `script_generator.py`.
 | Variable | Descripción | Por defecto |
 |----------|-------------|-------------|
 | `ANTHROPIC_API_KEY` | Clave de Anthropic (Claude) | — |
-| `ELEVENLABS_API_KEY` | Clave de ElevenLabs | — |
-| `ELEVENLABS_VOICE_ID` | ID de voz ElevenLabs | `pNInz6obpgDQGcFmaJgB` |
+| `TTS_VOICE` | Voz de edge-tts (gratuito) | `es-ES-AlvaroNeural` |
+| `TTS_RATE` | Velocidad de habla | `-5%` |
+| `TTS_VOLUME` | Volumen del audio | `+10%` |
 | `YOUTUBE_CLIENT_SECRETS_FILE` | Ruta al JSON de credenciales | `credentials/client_secret.json` |
 | `YOUTUBE_TOKEN_FILE` | Ruta al token OAuth guardado | `credentials/youtube_token.json` |
 | `YOUTUBE_CATEGORY_ID` | Categoría YouTube (22=Personas) | `22` |
@@ -163,10 +174,12 @@ Edita `SEED_CHARACTERS` en `script_generator.py`.
 
 | Servicio | Uso estimado | Costo aprox. |
 |----------|-------------|-------------|
-| Claude Opus | ~5000 tokens | ~$0.07 |
-| ElevenLabs | ~1500 palabras | ~$0.18 (plan Creator) |
-| YouTube API | 1 subida | Gratuito |
-| **Total** | | **~$0.25/episodio** |
+| Claude Haiku | ~5000 tokens | ~$0.003 |
+| edge-tts (Microsoft) | ilimitado | **GRATIS** |
+| YouTube API | 1 subida | **GRATIS** |
+| **Total** | | **~$0.003/episodio** |
+
+> **Practicamente gratuito.** Con $1 puedes generar más de 300 episodios.
 
 ## Seguridad
 

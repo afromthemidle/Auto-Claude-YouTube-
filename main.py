@@ -127,7 +127,8 @@ async def get_status():
         "schedule_time": f"{hour:02d}:{minute:02d}",
         "youtube_auth": check_youtube_auth(),
         "anthropic_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
-        "elevenlabs_configured": bool(os.getenv("ELEVENLABS_API_KEY")),
+        "tts_voice": os.getenv("TTS_VOICE", "es-ES-AlvaroNeural"),
+        "tts_engine": "edge-tts (gratuito)",
         "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
 
@@ -188,8 +189,6 @@ async def trigger_generation(background_tasks: BackgroundTasks):
 
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise HTTPException(status_code=400, detail="ANTHROPIC_API_KEY no configurada")
-    if not os.getenv("ELEVENLABS_API_KEY"):
-        raise HTTPException(status_code=400, detail="ELEVENLABS_API_KEY no configurada")
 
     async def run_in_background():
         global generation_running
@@ -215,6 +214,15 @@ async def get_channel():
         return {"connected": True, **info}
     except Exception as e:
         return {"connected": False, "error": str(e)}
+
+
+@app.get("/api/voices")
+async def get_voices():
+    """Lista todas las voces en español disponibles en edge-tts (gratuitas)."""
+    from tts_generator import list_available_voices
+    voices = await list_available_voices()
+    current = os.getenv("TTS_VOICE", "es-ES-AlvaroNeural")
+    return {"current_voice": current, "voices": voices}
 
 
 @app.get("/api/logs")

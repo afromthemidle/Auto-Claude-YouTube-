@@ -43,17 +43,12 @@ def check_env():
     from dotenv import load_dotenv
     load_dotenv()
 
-    missing = []
     if not os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_API_KEY") == "tu_clave_anthropic_aqui":
-        missing.append("ANTHROPIC_API_KEY")
-    if not os.getenv("ELEVENLABS_API_KEY") or os.getenv("ELEVENLABS_API_KEY") == "tu_clave_elevenlabs_aqui":
-        missing.append("ELEVENLABS_API_KEY")
-
-    if missing:
-        print(f"⚠️  Variables no configuradas en .env: {', '.join(missing)}")
+        print("⚠️  ANTHROPIC_API_KEY no configurada en .env")
         return False
 
-    print("✅ Variables de entorno configuradas")
+    voice = os.getenv("TTS_VOICE", "es-ES-AlvaroNeural")
+    print(f"✅ Variables de entorno configuradas (voz TTS: {voice})")
     return True
 
 
@@ -81,9 +76,9 @@ def print_next_steps():
     print("=" * 60)
     print("\nPróximos pasos:")
     print()
-    print("1. CLAVES API - Edita el archivo .env con:")
+    print("1. CLAVE API - Edita el archivo .env con:")
     print("   • ANTHROPIC_API_KEY  → https://console.anthropic.com")
-    print("   • ELEVENLABS_API_KEY → https://elevenlabs.io")
+    print("   (La voz usa edge-tts: GRATUITO, sin API key)")
     print()
     print("2. YOUTUBE - Configura las credenciales OAuth2:")
     print("   a. Ve a https://console.cloud.google.com")

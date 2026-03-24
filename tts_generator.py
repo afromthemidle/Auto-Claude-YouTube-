@@ -1,100 +1,114 @@
 """
-Generador de audio usando ElevenLabs TTS.
-Produce voz muy realista en español para el podcast.
+Generador de audio usando edge-tts (Microsoft Edge Neural TTS).
+100% gratuito, sin API key, voces neurales muy realistas en español.
 """
 
-import os
+import asyncio
 import logging
+import os
 from pathlib import Path
-from elevenlabs.client import ElevenLabs
-from elevenlabs import VoiceSettings
+
+import edge_tts
 
 logger = logging.getLogger(__name__)
 
-# Voces de ElevenLabs recomendadas para español (IDs de voces multilingües)
-# El usuario puede cambiar ELEVENLABS_VOICE_ID en .env para elegir su voz preferida
-RECOMMENDED_VOICES = {
-    "Adam": "pNInz6obpgDQGcFmaJgB",        # Voz masculina, cálida
-    "Antoni": "ErXwobaYiN019PkySvjV",       # Voz masculina, bien articulada
-    "Arnold": "VR6AewLTigWG4xSOukaG",       # Voz masculina, potente
-    "Callum": "N2lVS1w4EtoT3dr4eOWO",       # Voz masculina, narración
-    "Charlie": "IKne3meq5aSn9XLyUdCD",      # Voz masculina, conversacional
+# Voces neurales en español disponibles en edge-tts (todas gratuitas)
+# Ejecuta `edge-tts --list-voices | grep es-` para ver todas
+SPANISH_VOICES = {
+    "es-ES-AlvaroNeural":   "Álvaro - España (masculino, cálido) ⭐ Recomendado",
+    "es-ES-ElviraNeural":   "Elvira - España (femenino, clara)",
+    "es-MX-JorgeNeural":    "Jorge - México (masculino, profundo)",
+    "es-MX-DaliaNeural":    "Dalia - México (femenino, natural)",
+    "es-AR-TomasNeural":    "Tomás - Argentina (masculino)",
+    "es-AR-ElenaNeural":    "Elena - Argentina (femenino)",
+    "es-CO-GonzaloNeural":  "Gonzalo - Colombia (masculino)",
+    "es-CO-SalomeNeural":   "Salomé - Colombia (femenino)",
 }
 
+# Voz por defecto: Álvaro de España, ideal para podcast narrativo
+DEFAULT_VOICE = os.getenv("TTS_VOICE", "es-ES-AlvaroNeural")
 
-def get_elevenlabs_client() -> ElevenLabs:
-    api_key = os.getenv("ELEVENLABS_API_KEY")
-    if not api_key:
-        raise ValueError("ELEVENLABS_API_KEY no configurada en .env")
-    return ElevenLabs(api_key=api_key)
+# Velocidad de habla: valores posibles "+10%", "-5%", "+0%", etc.
+DEFAULT_RATE = os.getenv("TTS_RATE", "-5%")   # Ligeramente más lento para podcast
+
+# Volumen: "+0%", "+10%", "-10%"
+DEFAULT_VOLUME = os.getenv("TTS_VOLUME", "+10%")
+
+
+async def _synthesize_to_file(text: str, output_path: str, voice: str, rate: str, volume: str):
+    """Corrutina interna que llama a edge-tts y guarda el MP3."""
+    communicate = edge_tts.Communicate(text=text, voice=voice, rate=rate, volume=volume)
+    await communicate.save(output_path)
 
 
 def generate_audio(script: str, output_path: str, episode_number: int) -> str:
     """
-    Convierte el guión de texto a audio usando ElevenLabs.
-    Divide el guión en fragmentos si supera el límite de la API.
+    Convierte el guión a audio MP3 usando edge-tts (Microsoft neural TTS).
+    Completamente gratuito, sin límite de caracteres por llamada.
     """
-    client = get_elevenlabs_client()
-    voice_id = os.getenv("ELEVENLABS_VOICE_ID", "pNInz6obpgDQGcFmaJgB")
+    voice = DEFAULT_VOICE
+    rate = DEFAULT_RATE
+    volume = DEFAULT_VOLUME
 
-    logger.info(f"Generando audio para episodio {episode_number} con voz {voice_id}")
-
-    # Configuración de voz optimizada para podcast en español
-    voice_settings = VoiceSettings(
-        stability=0.71,          # Estabilidad alta para narración consistente
-        similarity_boost=0.85,   # Alta similitud con la voz original
-        style=0.35,              # Algo de expresividad sin exagerar
-        use_speaker_boost=True,  # Mejora la claridad del hablante
-    )
-
-    # ElevenLabs soporta hasta ~5000 caracteres por llamada en el plan gratuito
-    # Para textos largos, dividimos y concatenamos
-    audio_chunks = []
-    max_chunk_size = 4500
-
-    # Dividir el guión en fragmentos por párrafos completos
-    paragraphs = script.split("\n\n")
-    current_chunk = ""
-    chunks = []
-
-    for paragraph in paragraphs:
-        if len(current_chunk) + len(paragraph) + 2 <= max_chunk_size:
-            current_chunk += paragraph + "\n\n"
-        else:
-            if current_chunk.strip():
-                chunks.append(current_chunk.strip())
-            current_chunk = paragraph + "\n\n"
-
-    if current_chunk.strip():
-        chunks.append(current_chunk.strip())
-
-    logger.info(f"Guión dividido en {len(chunks)} fragmento(s) para TTS")
-
-    # Generar audio para cada fragmento
-    all_audio_bytes = b""
-    for i, chunk in enumerate(chunks):
-        logger.info(f"Generando fragmento de audio {i+1}/{len(chunks)} ({len(chunk)} caracteres)")
-        audio_generator = client.text_to_speech.convert(
-            voice_id=voice_id,
-            text=chunk,
-            model_id="eleven_multilingual_v2",   # Mejor modelo para español
-            voice_settings=voice_settings,
-            output_format="mp3_44100_128",         # Calidad de podcast estándar
-        )
-        # El resultado es un generador de bytes
-        chunk_bytes = b"".join(audio_generator)
-        all_audio_bytes += chunk_bytes
-
-    # Guardar el audio completo
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(output_path, "wb") as f:
-        f.write(all_audio_bytes)
+    logger.info(f"Generando audio con edge-tts: voz={voice}, rate={rate}")
+    logger.info(f"Longitud del guión: {len(script)} caracteres")
+
+    # Limpiar el texto para mejor pronunciación
+    clean_script = _clean_script_for_tts(script)
+
+    # edge-tts es async; lo ejecutamos en el event loop actual o uno nuevo
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # Si ya hay un loop corriendo (FastAPI), usar run_in_executor con nuevo loop
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(_run_async_synthesis, clean_script, str(output_path), voice, rate, volume)
+                future.result(timeout=600)
+        else:
+            loop.run_until_complete(
+                _synthesize_to_file(clean_script, str(output_path), voice, rate, volume)
+            )
+    except RuntimeError:
+        # No hay event loop, crear uno nuevo
+        asyncio.run(_synthesize_to_file(clean_script, str(output_path), voice, rate, volume))
+
+    if not output_path.exists() or output_path.stat().st_size == 0:
+        raise RuntimeError("edge-tts no generó el archivo de audio correctamente")
 
     file_size_mb = output_path.stat().st_size / (1024 * 1024)
     logger.info(f"Audio guardado: {output_path} ({file_size_mb:.2f} MB)")
     return str(output_path)
+
+
+def _run_async_synthesis(text: str, output_path: str, voice: str, rate: str, volume: str):
+    """Ejecuta la síntesis en un nuevo event loop (para usar desde threads)."""
+    new_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(new_loop)
+    try:
+        new_loop.run_until_complete(
+            _synthesize_to_file(text, output_path, voice, rate, volume)
+        )
+    finally:
+        new_loop.close()
+
+
+def _clean_script_for_tts(script: str) -> str:
+    """Limpia el guión para mejor pronunciación TTS."""
+    import re
+    # Eliminar markdown (asteriscos, ##, etc.)
+    script = re.sub(r'\*+([^*]+)\*+', r'\1', script)  # **texto** → texto
+    script = re.sub(r'#{1,6}\s+', '', script)           # ## Título → Título
+    script = re.sub(r'_+([^_]+)_+', r'\1', script)     # _texto_ → texto
+    # Eliminar corchetes y paréntesis de anotaciones
+    script = re.sub(r'\[.*?\]', '', script)
+    # Normalizar espacios y líneas en blanco
+    script = re.sub(r'\n{3,}', '\n\n', script)
+    script = script.strip()
+    return script
 
 
 def get_audio_duration_seconds(audio_path: str) -> float:
@@ -103,22 +117,28 @@ def get_audio_duration_seconds(audio_path: str) -> float:
     import json
 
     result = subprocess.run(
-        [
-            "ffprobe", "-v", "quiet", "-print_format", "json",
-            "-show_streams", audio_path
-        ],
+        ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_streams", audio_path],
         capture_output=True,
         text=True,
     )
-
-    if result.returncode != 0:
-        logger.warning("ffprobe no disponible, usando duración estimada")
-        # Estimación: ~150 palabras por minuto
-        return 600.0  # 10 minutos por defecto
-
-    data = json.loads(result.stdout)
-    for stream in data.get("streams", []):
-        if "duration" in stream:
-            return float(stream["duration"])
-
+    if result.returncode == 0:
+        data = json.loads(result.stdout)
+        for stream in data.get("streams", []):
+            if "duration" in stream:
+                return float(stream["duration"])
     return 600.0
+
+
+async def list_available_voices() -> list[dict]:
+    """Lista todas las voces en español disponibles en edge-tts."""
+    voices = await edge_tts.list_voices()
+    spanish = [v for v in voices if v["Locale"].startswith("es-")]
+    return [
+        {
+            "voice_id": v["ShortName"],
+            "name": v["FriendlyName"],
+            "locale": v["Locale"],
+            "gender": v["Gender"],
+        }
+        for v in spanish
+    ]

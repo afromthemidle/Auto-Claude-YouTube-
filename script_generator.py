@@ -35,7 +35,7 @@ def select_character(used_characters: list[str]) -> dict:
     seed_list = "\n".join(f"- {c}" for c in SEED_CHARACTERS)
 
     response = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-haiku-4-5-20251001",
         max_tokens=500,
         messages=[
             {
@@ -113,7 +113,7 @@ IMPORTANTE:
 Escribe el guión completo ahora:"""
 
     response = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-haiku-4-5-20251001",
         max_tokens=3000,
         messages=[{"role": "user", "content": prompt}],
     )
@@ -126,7 +126,7 @@ def generate_title_and_description(character_info: dict, episode_number: int, sc
     nombre = character_info["nombre"]
 
     response = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-haiku-4-5-20251001",
         max_tokens=800,
         messages=[
             {

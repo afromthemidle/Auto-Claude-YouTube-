@@ -347,8 +347,8 @@
     </div>
     <div class="stat-card">
       <div class="icon">🎙️</div>
-      <div class="label">ElevenLabs TTS</div>
-      <div class="value" id="stat-eleven">...</div>
+      <div class="label">Voz TTS (gratuita)</div>
+      <div class="value" id="stat-eleven" style="font-size:0.85rem">...</div>
     </div>
     <div class="stat-card">
       <div class="icon">📺</div>
@@ -470,10 +470,10 @@
       claudeEl.textContent = data.anthropic_configured ? '✓ Configurada' : '✗ Sin clave';
       claudeEl.className = 'value ' + (data.anthropic_configured ? 'ok' : 'error');
 
-      // ElevenLabs
+      // edge-tts (siempre disponible, gratuito)
       const elevenEl = el('stat-eleven');
-      elevenEl.textContent = data.elevenlabs_configured ? '✓ Configurada' : '✗ Sin clave';
-      elevenEl.className = 'value ' + (data.elevenlabs_configured ? 'ok' : 'error');
+      elevenEl.textContent = '✓ ' + (data.tts_voice || 'es-ES-AlvaroNeural');
+      elevenEl.className = 'value ok';
 
       // YouTube
       const ytEl = el('stat-yt');
