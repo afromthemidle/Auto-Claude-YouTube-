@@ -13,11 +13,9 @@ services:
       - key: YOUTUBE_TOKEN_JSON
         sync: false
       - key: TTS_VOICE
-        value: es-ES-AlvaroNeural
-      - key: TTS_RATE
-        value: "-5%"
-      - key: TTS_VOLUME
-        value: "+10%"
+        value: onyx
+      - key: TTS_MODEL
+        value: tts-1
       - key: YOUTUBE_CATEGORY_ID
         value: "22"
       - key: YOUTUBE_PRIVACY
@@ -30,7 +28,3 @@ services:
         value: "0.0.0.0"
       - key: SERVER_PORT
         value: "10000"
-    disk:
-      name: podcast-data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
