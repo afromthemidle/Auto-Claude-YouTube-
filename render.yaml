@@ -32,5 +32,5 @@ services:
         value: "10000"
     disk:
       name: podcast-data
-      mountPath: /opt/render/project/src
+      mountPath: /opt/render/project/src/data
       sizeGB: 1

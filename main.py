@@ -218,11 +218,10 @@ async def get_channel():
 
 @app.get("/api/voices")
 async def get_voices():
-    """Lista todas las voces en español disponibles en edge-tts (gratuitas)."""
-    from tts_generator import list_available_voices
-    voices = await list_available_voices()
-    current = os.getenv("TTS_VOICE", "es-ES-AlvaroNeural")
-    return {"current_voice": current, "voices": voices}
+    """Lista las voces disponibles en OpenAI TTS."""
+    openai_voices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+    current = os.getenv("TTS_VOICE", "onyx")
+    return {"current_voice": current, "voices": openai_voices}
 
 
 @app.get("/api/logs")
