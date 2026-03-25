@@ -21,7 +21,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 from database import get_all_episodes, get_episode, Episode
 from podcast_generator import run_episode_generation
-from youtube_uploader import check_youtube_auth, get_channel_info
+from youtube_uploader import check_youtube_auth, get_channel_info, start_oauth_flow, finish_oauth_flow
 
 # ── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -126,7 +126,7 @@ async def get_status():
         "next_scheduled_run": next_run,
         "schedule_time": f"{hour:02d}:{minute:02d}",
         "youtube_auth": check_youtube_auth(),
-        "anthropic_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
+        "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
         "tts_voice": os.getenv("TTS_VOICE", "es-ES-AlvaroNeural"),
         "tts_engine": "edge-tts (gratuito)",
         "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -187,8 +187,8 @@ async def trigger_generation(background_tasks: BackgroundTasks):
     if generation_running:
         raise HTTPException(status_code=409, detail="Ya hay una generación en curso")
 
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise HTTPException(status_code=400, detail="ANTHROPIC_API_KEY no configurada")
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=400, detail="OPENAI_API_KEY no configurada")
 
     async def run_in_background():
         global generation_running
@@ -245,8 +245,40 @@ async def get_thumbnail(episode_id: int):
     return FileResponse(ep.thumbnail_path, media_type="image/jpeg")
 
 
+@app.get("/api/youtube-auth")
+async def youtube_auth_start(request: Request):
+    """Inicia el flujo OAuth de YouTube. Redirige al usuario a Google para autorizar."""
+    from fastapi.responses import RedirectResponse
+    redirect_uri = str(request.base_url) + "api/youtube-auth/callback"
+    auth_url = start_oauth_flow(redirect_uri)
+    return RedirectResponse(auth_url)
+
+
+@app.get("/api/youtube-auth/callback")
+async def youtube_auth_callback(request: Request, code: str = None, error: str = None):
+    """Callback de OAuth. Google redirige aquí tras la autorización del usuario."""
+    from fastapi.responses import HTMLResponse
+    if error:
+        return HTMLResponse(f"<h2>Error de autorización: {error}</h2>")
+    if not code:
+        return HTMLResponse("<h2>No se recibió código de autorización.</h2>")
+    try:
+        redirect_uri = str(request.base_url) + "api/youtube-auth/callback"
+        finish_oauth_flow(code, redirect_uri)
+        return HTMLResponse("""
+            <html><body style="font-family:sans-serif;text-align:center;padding:50px">
+            <h2>✅ YouTube autorizado correctamente</h2>
+            <p>Ya puedes cerrar esta ventana y volver al dashboard.</p>
+            <a href="/">Volver al dashboard</a>
+            </body></html>
+        """)
+    except Exception as e:
+        logger.error(f"Error en OAuth callback: {e}", exc_info=True)
+        return HTMLResponse(f"<h2>Error: {e}</h2>")
+
+
 if __name__ == "__main__":
     import uvicorn
     host = os.getenv("SERVER_HOST", "0.0.0.0")
-    port = int(os.getenv("SERVER_PORT", "8000"))
+    port = int(os.getenv("PORT", os.getenv("SERVER_PORT", "8000")))
     uvicorn.run("main:app", host=host, port=port, reload=False)

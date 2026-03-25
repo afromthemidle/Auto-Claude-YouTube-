@@ -1,6 +1,7 @@
 """
 Subidor de videos a YouTube usando la YouTube Data API v3.
 Maneja autenticación OAuth2 y subida de videos con metadatos completos.
+Soporta credenciales desde variables de entorno (para despliegue en Render/cloud).
 """
 
 import os
@@ -11,7 +12,6 @@ from datetime import datetime
 
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
@@ -25,51 +25,101 @@ YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
 
-def get_authenticated_service():
-    """
-    Autentica con YouTube API usando OAuth2.
-    En la primera ejecución, abre un navegador para autorización.
-    Las credenciales se guardan para usos futuros.
-    """
+def _get_client_secrets_dict() -> dict:
+    """Obtiene el dict de client_secrets desde env var o archivo."""
+    env_json = os.getenv("YOUTUBE_CLIENT_SECRET_JSON")
+    if env_json:
+        return json.loads(env_json)
+
     client_secrets_file = os.getenv(
         "YOUTUBE_CLIENT_SECRETS_FILE", "credentials/client_secret.json"
     )
+    if Path(client_secrets_file).exists():
+        with open(client_secrets_file) as f:
+            return json.load(f)
+
+    raise FileNotFoundError(
+        "Credenciales de YouTube no encontradas. "
+        "Configura YOUTUBE_CLIENT_SECRET_JSON como variable de entorno "
+        "o coloca el archivo en credentials/client_secret.json"
+    )
+
+
+def _get_saved_token() -> Credentials | None:
+    """Carga el token guardado desde env var o archivo."""
+    token_json = os.getenv("YOUTUBE_TOKEN_JSON")
+    if token_json:
+        return Credentials.from_authorized_user_info(json.loads(token_json), SCOPES)
+
     token_file = os.getenv("YOUTUBE_TOKEN_FILE", "credentials/youtube_token.json")
-
-    if not Path(client_secrets_file).exists():
-        raise FileNotFoundError(
-            f"Archivo de credenciales de YouTube no encontrado: {client_secrets_file}\n"
-            "Descárgalo desde Google Cloud Console > APIs > Credenciales > OAuth 2.0"
-        )
-
-    creds = None
-
-    # Cargar token existente
     if Path(token_file).exists():
-        creds = Credentials.from_authorized_user_file(token_file, SCOPES)
+        return Credentials.from_authorized_user_file(token_file, SCOPES)
 
-    # Renovar o crear nuevo token
+    return None
+
+
+def _save_token(creds: Credentials):
+    """Guarda el token en archivo."""
+    token_file = os.getenv("YOUTUBE_TOKEN_FILE", "credentials/youtube_token.json")
+    Path(token_file).parent.mkdir(parents=True, exist_ok=True)
+    with open(token_file, "w") as f:
+        f.write(creds.to_json())
+    logger.info(f"Token guardado en {token_file}")
+    logger.info("Copia este JSON a la variable YOUTUBE_TOKEN_JSON en Render:")
+    logger.info(creds.to_json())
+
+
+def get_authenticated_service():
+    """
+    Autentica con YouTube API usando OAuth2.
+    Lee credenciales desde variables de entorno o archivos locales.
+    """
+    creds = _get_saved_token()
+
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             logger.info("Renovando token de YouTube...")
             creds.refresh(Request())
+            _save_token(creds)
         else:
-            logger.info("Iniciando flujo de autenticación OAuth2 para YouTube...")
-            flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file, SCOPES)
-            # En servidor sin GUI, usar autenticación por consola
-            creds = flow.run_local_server(
-                port=8080,
-                prompt="consent",
-                open_browser=True,
+            raise RuntimeError(
+                "YouTube no autenticado. Visita /api/youtube-auth en el dashboard "
+                "para iniciar el proceso de autenticación."
             )
 
-        # Guardar el token
-        Path(token_file).parent.mkdir(parents=True, exist_ok=True)
-        with open(token_file, "w") as f:
-            f.write(creds.to_json())
-        logger.info(f"Token de YouTube guardado en {token_file}")
-
     return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, credentials=creds)
+
+
+def start_oauth_flow(redirect_uri: str) -> str:
+    """Inicia el flujo OAuth y retorna la URL de autorización de Google."""
+    from google_auth_oauthlib.flow import Flow
+    client_config = _get_client_secrets_dict()
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=redirect_uri,
+    )
+    auth_url, _ = flow.authorization_url(
+        access_type="offline",
+        prompt="consent",
+        include_granted_scopes="true",
+    )
+    return auth_url
+
+
+def finish_oauth_flow(code: str, redirect_uri: str) -> Credentials:
+    """Finaliza el flujo OAuth con el código recibido del callback de Google."""
+    from google_auth_oauthlib.flow import Flow
+    client_config = _get_client_secrets_dict()
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES,
+        redirect_uri=redirect_uri,
+    )
+    flow.fetch_token(code=code)
+    creds = flow.credentials
+    _save_token(creds)
+    return creds
 
 
 def upload_video(
@@ -89,12 +139,11 @@ def upload_video(
     category_id = os.getenv("YOUTUBE_CATEGORY_ID", "22")
     privacy = os.getenv("YOUTUBE_PRIVACY", "public")
 
-    # Metadatos del video
     body = {
         "snippet": {
-            "title": title[:100],  # YouTube limita a 100 caracteres
-            "description": description[:5000],  # YouTube limita a 5000 caracteres
-            "tags": tags[:500],  # Limitar tags
+            "title": title[:100],
+            "description": description[:5000],
+            "tags": tags[:500],
             "categoryId": category_id,
             "defaultLanguage": "es",
             "defaultAudioLanguage": "es",
@@ -105,12 +154,11 @@ def upload_video(
         },
     }
 
-    # Configurar la subida del archivo
     media = MediaFileUpload(
         str(video_path),
         mimetype="video/mp4",
-        resumable=True,  # Subida resumible para archivos grandes
-        chunksize=1024 * 1024 * 10,  # Chunks de 10MB
+        resumable=True,
+        chunksize=1024 * 1024 * 10,
     )
 
     logger.info(f"Iniciando subida a YouTube: {title}")
@@ -122,7 +170,6 @@ def upload_video(
         media_body=media,
     )
 
-    # Subida con progreso
     video_id = None
     response = None
     while response is None:
@@ -135,7 +182,6 @@ def upload_video(
     video_url = f"https://www.youtube.com/watch?v={video_id}"
     logger.info(f"Video subido exitosamente: {video_url}")
 
-    # Subir miniatura personalizada
     if thumbnail_path and Path(thumbnail_path).exists():
         try:
             logger.info("Subiendo miniatura personalizada...")
@@ -158,9 +204,11 @@ def upload_video(
 
 def check_youtube_auth() -> bool:
     """Verifica si la autenticación de YouTube está configurada."""
-    token_file = os.getenv("YOUTUBE_TOKEN_FILE", "credentials/youtube_token.json")
-    client_file = os.getenv("YOUTUBE_CLIENT_SECRETS_FILE", "credentials/client_secret.json")
-    return Path(token_file).exists() and Path(client_file).exists()
+    try:
+        creds = _get_saved_token()
+        return creds is not None
+    except Exception:
+        return False
 
 
 def get_channel_info() -> dict:
