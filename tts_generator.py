@@ -55,7 +55,7 @@ def generate_audio(script: str, output_path: str, episode_number: int) -> str:
         import subprocess
         chunk_paths = []
         for i, chunk in enumerate(chunks):
-            chunk_path = output_path.parent / f"_chunk_{episode_number}_{i}.mp3"
+            chunk_path = output_path.parent.resolve() / f"_chunk_{episode_number}_{i}.mp3"
             response = client.audio.speech.create(
                 model=model,
                 voice=voice,
@@ -65,17 +65,20 @@ def generate_audio(script: str, output_path: str, episode_number: int) -> str:
             response.stream_to_file(str(chunk_path))
             chunk_paths.append(str(chunk_path))
 
-        # Concatenar con ffmpeg
-        list_file = output_path.parent / f"_chunks_{episode_number}.txt"
+        # Concatenar con ffmpeg usando rutas absolutas
+        list_file = output_path.parent.resolve() / f"_chunks_{episode_number}.txt"
         with open(list_file, "w") as f:
             for cp in chunk_paths:
                 f.write(f"file '{cp}'\n")
 
-        subprocess.run(
+        result = subprocess.run(
             ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(list_file),
-             "-c", "copy", str(output_path)],
-            check=True, capture_output=True
+             "-c", "copy", str(output_path.resolve())],
+            capture_output=True, text=True
         )
+        if result.returncode != 0:
+            logger.error(f"ffmpeg error: {result.stderr}")
+            raise RuntimeError(f"ffmpeg concat falló: {result.stderr[-500:]}")
 
         # Limpiar archivos temporales
         for cp in chunk_paths:
