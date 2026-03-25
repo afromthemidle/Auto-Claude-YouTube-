@@ -1,17 +1,17 @@
 """
-Generador de guiones usando la API de Claude.
+Generador de guiones usando la API de OpenAI.
 Crea episodios detallados sobre personajes famosos vegetarianos del mundo.
 """
 
 import os
 import logging
-from anthropic import Anthropic
+from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
-client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Lista de personajes famosos vegetarianos del mundo para sugerir a Claude
+# Lista de personajes famosos vegetarianos del mundo para sugerir al modelo
 SEED_CHARACTERS = [
     "Leonardo da Vinci", "Mahatma Gandhi", "Albert Einstein", "Leo Tolstói",
     "Nikola Tesla", "Paul McCartney", "Natalie Portman", "Brad Pitt",
@@ -30,12 +30,12 @@ SEED_CHARACTERS = [
 
 
 def select_character(used_characters: list[str]) -> dict:
-    """Usa Claude para seleccionar el siguiente personaje vegetariano."""
+    """Usa OpenAI para seleccionar el siguiente personaje vegetariano."""
     used_list = "\n".join(f"- {c}" for c in used_characters) if used_characters else "Ninguno aún."
     seed_list = "\n".join(f"- {c}" for c in SEED_CHARACTERS)
 
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=500,
         messages=[
             {
@@ -64,7 +64,7 @@ Responde ÚNICAMENTE con este JSON exacto (sin markdown, sin explicaciones):
     )
 
     import json
-    text = response.content[0].text.strip()
+    text = response.choices[0].message.content.strip()
     # Limpiar posibles bloques de código markdown
     if text.startswith("```"):
         text = text.split("```")[1]
@@ -74,7 +74,7 @@ Responde ÚNICAMENTE con este JSON exacto (sin markdown, sin explicaciones):
 
 
 def generate_script(character_info: dict, episode_number: int) -> str:
-    """Genera el guión completo del episodio con Claude."""
+    """Genera el guión completo del episodio con OpenAI."""
     nombre = character_info["nombre"]
     nacionalidad = character_info["nacionalidad"]
     profesion = character_info["profesion"]
@@ -112,21 +112,21 @@ IMPORTANTE:
 
 Escribe el guión completo ahora:"""
 
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=3000,
         messages=[{"role": "user", "content": prompt}],
     )
 
-    return response.content[0].text.strip()
+    return response.choices[0].message.content.strip()
 
 
 def generate_title_and_description(character_info: dict, episode_number: int, script: str) -> dict:
     """Genera título, descripción y tags optimizados para YouTube."""
     nombre = character_info["nombre"]
 
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=800,
         messages=[
             {
@@ -147,7 +147,7 @@ Responde ÚNICAMENTE con este JSON (sin markdown):
     )
 
     import json
-    text = response.content[0].text.strip()
+    text = response.choices[0].message.content.strip()
     if text.startswith("```"):
         text = text.split("```")[1]
         if text.startswith("json"):
