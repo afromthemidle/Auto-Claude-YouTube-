@@ -1,0 +1,85 @@
+name: Build & Release APK
+
+on:
+  push:
+    branches: [ "claude/android-recipe-app-Pdv6c", "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Hacer ejecutable gradlew
+        run: chmod +x ./gradlew
+        working-directory: .
+
+      - name: Verificar ambiente
+        run: |
+          java -version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ./gradlew --version
+
+      - name: Compilar APK Debug
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Subir APK como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: RecipeDiet-Debug-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: Mostrar info del APK
+        run: |
+          echo "✅ APK generado exitosamente"
+          ls -lh app/build/outputs/apk/debug/
+
+  release:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    needs: build
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Hacer ejecutable gradlew
+        run: chmod +x ./gradlew
+
+      - name: Compilar APK Release (sin firma)
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Subir APK Release como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: RecipeDiet-Release-APK
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          retention-days: 90
