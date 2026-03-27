@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.recipediet.app.ui.home.HomeFragment"
+        android:label="Inicio">
+        <action
+            android:id="@+id/action_home_to_detail"
+            app:destination="@id/recipeDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.recipediet.app.ui.favorites.FavoritesFragment"
+        android:label="Favoritos">
+        <action
+            android:id="@+id/action_favorites_to_detail"
+            app:destination="@id/recipeDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.recipediet.app.ui.profile.ProfileFragment"
+        android:label="Perfil" />
+
+    <fragment
+        android:id="@+id/recipeDetailFragment"
+        android:name="com.recipediet.app.ui.detail.RecipeDetailFragment"
+        android:label="Receta">
+        <argument
+            android:name="recipe_id"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+
+</navigation>

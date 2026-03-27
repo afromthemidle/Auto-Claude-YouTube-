@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary brand color - fresh green -->
+    <color name="primary">#2E7D32</color>
+    <color name="primary_variant">#1B5E20</color>
+    <color name="primary_container">#E8F5E9</color>
+    <color name="on_primary">#FFFFFF</color>
+
+    <!-- Secondary - warm orange -->
+    <color name="secondary">#F57C00</color>
+    <color name="secondary_variant">#E65100</color>
+    <color name="on_secondary">#FFFFFF</color>
+
+    <!-- Accent -->
+    <color name="accent">#FF6F00</color>
+
+    <!-- Background -->
+    <color name="background">#F8F9FA</color>
+    <color name="surface">#FFFFFF</color>
+
+    <!-- Text -->
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#6B7280</color>
+
+    <!-- Utility -->
+    <color name="divider">#E5E7EB</color>
+    <color name="star_color">#FFC107</color>
+
+    <!-- Macros -->
+    <color name="protein_color">#1565C0</color>
+    <color name="carbs_color">#E65100</color>
+    <color name="fat_color">#6A1B9A</color>
+
+    <!-- Dark theme placeholders -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

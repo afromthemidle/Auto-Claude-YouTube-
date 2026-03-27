@@ -1,0 +1,653 @@
+package com.recipediet.app.data.repository
+
+import com.recipediet.app.data.model.*
+
+object RecipeDataSource {
+
+    fun getSampleRecipes(): List<Recipe> = listOf(
+        // DESAYUNOS
+        Recipe(
+            id = 1,
+            name = "Tazón de Açaí",
+            description = "Refrescante tazón de açaí con frutas frescas y granola crujiente.",
+            imageEmoji = "🫐",
+            calories = 320,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 0,
+            servings = 1,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.BREAKFAST,
+            dietTypes = listOf(DietType.VEGAN, DietType.VEGETARIAN, DietType.GLUTEN_FREE),
+            ingredients = listOf(
+                "200g de pulpa de açaí congelada",
+                "1 banana",
+                "1/2 taza de leche de almendras",
+                "1/4 taza de granola sin gluten",
+                "1/2 taza de fresas",
+                "1/4 taza de arándanos",
+                "1 cucharada de semillas de chía",
+                "1 cucharada de mantequilla de almendras"
+            ),
+            steps = listOf(
+                "Licúa el açaí con la banana y la leche de almendras hasta obtener una mezcla espesa.",
+                "Vierte en un tazón hondo.",
+                "Coloca la granola encima.",
+                "Decora con las fresas, arándanos y semillas de chía.",
+                "Añade la mantequilla de almendras en el centro.",
+                "Sirve inmediatamente."
+            ),
+            tags = listOf("sin gluten", "vegano", "antioxidante", "desayuno"),
+            protein = 8, carbs = 52, fat = 10, rating = 4.8f
+        ),
+        Recipe(
+            id = 2,
+            name = "Huevos Revueltos con Aguacate",
+            description = "Proteínico desayuno keto con huevos cremosos y aguacate fresco.",
+            imageEmoji = "🥑",
+            calories = 450,
+            prepTimeMinutes = 5,
+            cookTimeMinutes = 10,
+            servings = 1,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.BREAKFAST,
+            dietTypes = listOf(DietType.KETO, DietType.LOW_CARB, DietType.GLUTEN_FREE, DietType.VEGETARIAN),
+            ingredients = listOf(
+                "3 huevos grandes",
+                "1 aguacate maduro",
+                "2 cucharadas de mantequilla",
+                "2 cucharadas de crema",
+                "Sal y pimienta al gusto",
+                "Cebollín picado para decorar",
+                "Pizca de pimentón ahumado"
+            ),
+            steps = listOf(
+                "Bate los huevos con la crema, sal y pimienta.",
+                "Calienta la mantequilla a fuego medio-bajo.",
+                "Agrega los huevos y revuelve constantemente con espátula.",
+                "Retira del fuego cuando estén cremosos (ligeramente húmedos).",
+                "Sirve sobre el aguacate cortado en láminas.",
+                "Decora con cebollín y pimentón ahumado."
+            ),
+            tags = listOf("keto", "alto proteína", "sin gluten", "rápido"),
+            protein = 22, carbs = 6, fat = 38, rating = 4.7f
+        ),
+        Recipe(
+            id = 3,
+            name = "Avena Overnight con Frutos Rojos",
+            description = "Avena preparada la noche anterior con frutas y miel.",
+            imageEmoji = "🫙",
+            calories = 380,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 0,
+            servings = 1,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.BREAKFAST,
+            dietTypes = listOf(DietType.VEGETARIAN, DietType.MEDITERRANEAN),
+            ingredients = listOf(
+                "1/2 taza de avena en hojuelas",
+                "1 taza de leche de avena",
+                "1/2 taza de yogur griego",
+                "1 cucharada de miel",
+                "1/4 taza de fresas",
+                "1/4 taza de moras",
+                "1 cucharada de semillas de lino",
+                "1/4 cucharadita de canela"
+            ),
+            steps = listOf(
+                "Mezcla la avena, leche, yogur, miel y canela en un frasco.",
+                "Añade las semillas de lino y revuelve bien.",
+                "Refrigera durante la noche (mínimo 6 horas).",
+                "Por la mañana, coloca los frutos rojos encima.",
+                "Añade más leche si quedó muy espeso.",
+                "Sirve frío directamente del frasco."
+            ),
+            tags = listOf("vegetariano", "sin cocción", "fibra", "preparación anticipada"),
+            protein = 15, carbs = 58, fat = 8, rating = 4.6f
+        ),
+        Recipe(
+            id = 4,
+            name = "Smoothie Bowl Verde",
+            description = "Tazón de batido verde con espinacas, mango y coco rallado.",
+            imageEmoji = "🥭",
+            calories = 290,
+            prepTimeMinutes = 8,
+            cookTimeMinutes = 0,
+            servings = 1,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.BREAKFAST,
+            dietTypes = listOf(DietType.VEGAN, DietType.VEGETARIAN, DietType.GLUTEN_FREE, DietType.DAIRY_FREE),
+            ingredients = listOf(
+                "2 tazas de espinacas baby",
+                "1 mango congelado",
+                "1/2 banana",
+                "1/2 taza de leche de coco",
+                "1/4 taza de granola",
+                "2 cucharadas de coco rallado",
+                "1 cucharadita de espirulina (opcional)",
+                "Rodajas de kiwi para decorar"
+            ),
+            steps = listOf(
+                "Licúa las espinacas con el mango, banana y leche de coco.",
+                "Debe quedar espeso, casi como helado.",
+                "Vierte en un tazón.",
+                "Decora con granola, coco rallado y kiwi.",
+                "Agrega espirulina si deseas más nutrientes.",
+                "Consume inmediatamente."
+            ),
+            tags = listOf("vegano", "verde", "detox", "sin gluten"),
+            protein = 6, carbs = 58, fat = 8, rating = 4.5f
+        ),
+
+        // ALMUERZOS
+        Recipe(
+            id = 5,
+            name = "Buddha Bowl Mediterráneo",
+            description = "Tazón completo con garbanzos, quinoa y vegetales asados al estilo mediterráneo.",
+            imageEmoji = "🥙",
+            calories = 520,
+            prepTimeMinutes = 15,
+            cookTimeMinutes = 25,
+            servings = 2,
+            difficulty = Difficulty.MEDIUM,
+            category = RecipeCategory.LUNCH,
+            dietTypes = listOf(DietType.VEGAN, DietType.VEGETARIAN, DietType.MEDITERRANEAN, DietType.GLUTEN_FREE),
+            ingredients = listOf(
+                "1 taza de quinoa cocida",
+                "1 lata de garbanzos escurridos",
+                "1 pimiento rojo en cubos",
+                "1 zucchini en rodajas",
+                "1 taza de tomates cherry",
+                "1/2 pepino en rodajas",
+                "2 cucharadas de aceite de oliva",
+                "Jugo de 1 limón",
+                "1 cucharadita de orégano",
+                "100g de queso feta (opcional)",
+                "Hojas de albahaca fresca",
+                "Sal y pimienta al gusto"
+            ),
+            steps = listOf(
+                "Precalienta el horno a 200°C.",
+                "Mezcla los garbanzos, pimiento y zucchini con aceite de oliva, sal y orégano.",
+                "Hornea por 20-25 minutos hasta dorar.",
+                "Prepara la base con la quinoa en cada tazón.",
+                "Coloca los vegetales asados encima.",
+                "Añade el pepino y tomates cherry frescos.",
+                "Desmenuza el queso feta por encima.",
+                "Aliña con limón, aceite de oliva y albahaca."
+            ),
+            tags = listOf("mediterráneo", "vegano", "proteína vegetal", "colorido"),
+            protein = 22, carbs = 68, fat = 16, rating = 4.9f
+        ),
+        Recipe(
+            id = 6,
+            name = "Ensalada César con Pollo",
+            description = "Clásica ensalada César con pollo a la plancha y aderezo casero.",
+            imageEmoji = "🥗",
+            calories = 480,
+            prepTimeMinutes = 15,
+            cookTimeMinutes = 15,
+            servings = 2,
+            difficulty = Difficulty.MEDIUM,
+            category = RecipeCategory.LUNCH,
+            dietTypes = listOf(DietType.LOW_CARB, DietType.HIGH_PROTEIN, DietType.GLUTEN_FREE),
+            ingredients = listOf(
+                "2 pechugas de pollo",
+                "1 lechuga romana grande",
+                "50g de queso parmesano rallado",
+                "Crutones (opcionales)",
+                "3 cucharadas de aderezo César",
+                "1 cucharada de aceite de oliva",
+                "Jugo de 1/2 limón",
+                "Sal, pimienta y ajo en polvo"
+            ),
+            steps = listOf(
+                "Sazona el pollo con sal, pimienta y ajo en polvo.",
+                "Cocina a la plancha 6-7 minutos por cada lado.",
+                "Deja reposar 5 minutos y corta en láminas.",
+                "Lava y trocea la lechuga romana.",
+                "Mezcla con el aderezo César.",
+                "Coloca el pollo encima.",
+                "Espolvorea parmesano y agrega crutones.",
+                "Termina con jugo de limón y aceite de oliva."
+            ),
+            tags = listOf("alto proteína", "bajo carbo", "clásico", "sin gluten"),
+            protein = 42, carbs = 8, fat = 28, rating = 4.7f
+        ),
+        Recipe(
+            id = 7,
+            name = "Tacos de Frijoles Negros",
+            description = "Tacos veganos con frijoles negros especiados y salsa fresca.",
+            imageEmoji = "🌮",
+            calories = 410,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 15,
+            servings = 2,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.LUNCH,
+            dietTypes = listOf(DietType.VEGAN, DietType.VEGETARIAN, DietType.DAIRY_FREE),
+            ingredients = listOf(
+                "6 tortillas de maíz",
+                "2 latas de frijoles negros",
+                "1 cebolla mediana picada",
+                "3 dientes de ajo",
+                "1 cucharadita de comino",
+                "1 cucharadita de chile en polvo",
+                "2 tomates picados",
+                "1/2 cebolla morada picada",
+                "Cilantro fresco",
+                "Limón al gusto",
+                "1 aguacate",
+                "Sal al gusto"
+            ),
+            steps = listOf(
+                "Sofríe la cebolla y ajo en aceite hasta transparentar.",
+                "Agrega los frijoles con el comino y chile en polvo.",
+                "Cocina 10 minutos a fuego medio machacando algunos frijoles.",
+                "Prepara la salsa mezclando tomate, cebolla morada y cilantro.",
+                "Sazona con limón y sal.",
+                "Calienta las tortillas en comal seco.",
+                "Rellena con los frijoles y la salsa fresca.",
+                "Sirve con aguacate en láminas y más cilantro."
+            ),
+            tags = listOf("vegano", "mexicano", "económico", "proteína vegetal"),
+            protein = 18, carbs = 65, fat = 10, rating = 4.6f
+        ),
+        Recipe(
+            id = 8,
+            name = "Salmón Teriyaki con Arroz",
+            description = "Filete de salmón glaseado con salsa teriyaki casera y arroz de jazmín.",
+            imageEmoji = "🐟",
+            calories = 560,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 20,
+            servings = 2,
+            difficulty = Difficulty.MEDIUM,
+            category = RecipeCategory.LUNCH,
+            dietTypes = listOf(DietType.OMNIVORE, DietType.DAIRY_FREE, DietType.GLUTEN_FREE),
+            ingredients = listOf(
+                "2 filetes de salmón (200g c/u)",
+                "1 taza de arroz de jazmín",
+                "3 cucharadas de salsa de soya baja en sodio",
+                "2 cucharadas de miel",
+                "1 cucharada de jengibre rallado",
+                "2 dientes de ajo rallados",
+                "1 cucharadita de aceite de sésamo",
+                "Semillas de sésamo para decorar",
+                "Cebollín picado",
+                "Brócoli al vapor"
+            ),
+            steps = listOf(
+                "Cocina el arroz según las instrucciones del paquete.",
+                "Mezcla soya, miel, jengibre, ajo y aceite de sésamo para la salsa teriyaki.",
+                "Marina el salmón en la salsa por 15 minutos.",
+                "Calienta una sartén a fuego medio-alto.",
+                "Cocina el salmón 4 minutos por cada lado.",
+                "Añade el resto de la salsa y glasea 2 minutos más.",
+                "Sirve sobre el arroz con brócoli al vapor.",
+                "Decora con sésamo y cebollín."
+            ),
+            tags = listOf("mariscos", "asiático", "omega-3", "sin lácteos"),
+            protein = 38, carbs = 52, fat = 18, rating = 4.8f
+        ),
+
+        // CENAS
+        Recipe(
+            id = 9,
+            name = "Sopa de Lentejas Rojas",
+            description = "Reconfortante sopa de lentejas con especias mediterráneas y limón.",
+            imageEmoji = "🍲",
+            calories = 340,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 30,
+            servings = 4,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.DINNER,
+            dietTypes = listOf(DietType.VEGAN, DietType.VEGETARIAN, DietType.MEDITERRANEAN, DietType.GLUTEN_FREE, DietType.DAIRY_FREE),
+            ingredients = listOf(
+                "2 tazas de lentejas rojas",
+                "1 cebolla grande picada",
+                "4 dientes de ajo",
+                "2 zanahorias en cubos",
+                "1 lata de tomates pelados",
+                "1 cucharadita de comino",
+                "1 cucharadita de cúrcuma",
+                "1/2 cucharadita de pimentón",
+                "Jugo de 1 limón",
+                "6 tazas de caldo de vegetales",
+                "Aceite de oliva",
+                "Perejil fresco",
+                "Sal y pimienta"
+            ),
+            steps = listOf(
+                "Sofríe la cebolla en aceite de oliva hasta dorar.",
+                "Agrega el ajo, comino, cúrcuma y pimentón. Cocina 1 minuto.",
+                "Añade las zanahorias y cocina 3 minutos.",
+                "Incorpora las lentejas, tomates y caldo.",
+                "Hierve y luego reduce a fuego medio-bajo.",
+                "Cocina 25 minutos hasta que las lentejas estén suaves.",
+                "Licúa parcialmente para textura cremosa.",
+                "Agrega jugo de limón, perejil y ajusta sal."
+            ),
+            tags = listOf("vegano", "sopa", "proteína vegetal", "reconfortante"),
+            protein = 18, carbs = 50, fat = 6, rating = 4.7f
+        ),
+        Recipe(
+            id = 10,
+            name = "Pollo al Horno con Vegetales",
+            description = "Muslos de pollo jugosos con vegetales de temporada al horno.",
+            imageEmoji = "🍗",
+            calories = 490,
+            prepTimeMinutes = 15,
+            cookTimeMinutes = 45,
+            servings = 4,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.DINNER,
+            dietTypes = listOf(DietType.OMNIVORE, DietType.PALEO, DietType.GLUTEN_FREE, DietType.DAIRY_FREE, DietType.LOW_CARB),
+            ingredients = listOf(
+                "4 muslos de pollo con hueso",
+                "2 papas medianas en cubos",
+                "1 pimiento rojo en tiras",
+                "1 cebolla en gajos",
+                "2 zucchinis en rodajas",
+                "4 dientes de ajo",
+                "3 cucharadas de aceite de oliva",
+                "1 cucharadita de pimentón",
+                "1 cucharadita de orégano seco",
+                "Romero fresco",
+                "Sal y pimienta al gusto"
+            ),
+            steps = listOf(
+                "Precalienta el horno a 200°C.",
+                "Mezcla el aceite con pimentón, orégano, sal y pimienta.",
+                "Adoba el pollo con la mezcla de especias.",
+                "Coloca el pollo en una bandeja para horno.",
+                "Agrega los vegetales alrededor y el ajo entero.",
+                "Añade ramitas de romero.",
+                "Hornea 40-45 minutos hasta que el pollo esté dorado.",
+                "Deja reposar 5 minutos antes de servir."
+            ),
+            tags = listOf("paleo", "sin gluten", "fácil", "familiar"),
+            protein = 35, carbs = 28, fat = 22, rating = 4.8f
+        ),
+        Recipe(
+            id = 11,
+            name = "Pasta Primavera Vegana",
+            description = "Pasta con vegetales frescos de temporada y salsa de tomate casera.",
+            imageEmoji = "🍝",
+            calories = 420,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 20,
+            servings = 2,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.DINNER,
+            dietTypes = listOf(DietType.VEGAN, DietType.VEGETARIAN, DietType.DAIRY_FREE),
+            ingredients = listOf(
+                "200g de pasta (spaghetti o penne)",
+                "1 zucchini en medias lunas",
+                "1 pimiento amarillo en tiras",
+                "1 taza de tomates cherry",
+                "1 taza de espinacas baby",
+                "4 dientes de ajo picados",
+                "1/4 taza de aceitunas negras",
+                "3 cucharadas de aceite de oliva",
+                "Albahaca fresca",
+                "Sal, pimienta y chile en hojuelas"
+            ),
+            steps = listOf(
+                "Cocina la pasta al dente según instrucciones.",
+                "Reserva 1/2 taza del agua de cocción.",
+                "Saltea el ajo en aceite de oliva 1 minuto.",
+                "Agrega el pimiento y zucchini, cocina 5 minutos.",
+                "Añade los tomates cherry y cocina hasta que suelten jugo.",
+                "Incorpora las espinacas y las aceitunas.",
+                "Mezcla con la pasta y el agua reservada.",
+                "Sirve con albahaca fresca y chile en hojuelas."
+            ),
+            tags = listOf("vegano", "pasta", "rápido", "italiano"),
+            protein = 14, carbs = 72, fat = 14, rating = 4.5f
+        ),
+        Recipe(
+            id = 12,
+            name = "Bowl Keto de Carne",
+            description = "Tazón bajo en carbos con carne molida, aguacate y vegetales.",
+            imageEmoji = "🥩",
+            calories = 580,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 15,
+            servings = 2,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.DINNER,
+            dietTypes = listOf(DietType.KETO, DietType.LOW_CARB, DietType.GLUTEN_FREE, DietType.PALEO),
+            ingredients = listOf(
+                "400g de carne molida (80/20)",
+                "2 tazas de lechuga romana picada",
+                "1 aguacate en cubos",
+                "1 tomate picado",
+                "1/2 cebolla morada picada",
+                "100g de queso cheddar rallado",
+                "2 cucharadas de crema agria",
+                "1 cucharada de aceite de coco",
+                "1 cucharadita de comino",
+                "1 cucharadita de chile en polvo",
+                "Sal y pimienta"
+            ),
+            steps = listOf(
+                "Calienta el aceite de coco en sartén a fuego alto.",
+                "Agrega la carne molida y desbarátala bien.",
+                "Sazona con comino, chile, sal y pimienta.",
+                "Cocina hasta dorar bien (10-12 minutos).",
+                "Prepara la base con la lechuga en cada tazón.",
+                "Coloca la carne encima.",
+                "Añade el aguacate, tomate y cebolla.",
+                "Termina con queso, crema agria y más especias."
+            ),
+            tags = listOf("keto", "alto proteína", "sin gluten", "low-carb"),
+            protein = 40, carbs = 8, fat = 44, rating = 4.7f
+        ),
+
+        // MERIENDAS
+        Recipe(
+            id = 13,
+            name = "Hummus Casero con Crudités",
+            description = "Hummus cremoso con tahini acompañado de vegetales frescos.",
+            imageEmoji = "🫘",
+            calories = 220,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 0,
+            servings = 4,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.SNACK,
+            dietTypes = listOf(DietType.VEGAN, DietType.VEGETARIAN, DietType.MEDITERRANEAN, DietType.GLUTEN_FREE, DietType.DAIRY_FREE),
+            ingredients = listOf(
+                "1 lata de garbanzos",
+                "3 cucharadas de tahini",
+                "Jugo de 1 limón",
+                "2 dientes de ajo",
+                "3 cucharadas de aceite de oliva",
+                "1/2 cucharadita de comino",
+                "Sal al gusto",
+                "Pimentón para decorar",
+                "Zanahorias, apio y pepino en bastones"
+            ),
+            steps = listOf(
+                "Escurre los garbanzos reservando el líquido.",
+                "Licúa garbanzos, tahini, limón, ajo y comino.",
+                "Agrega aceite de oliva mientras mezclas.",
+                "Si está muy espeso, añade el líquido reservado.",
+                "Ajusta sal y limón al gusto.",
+                "Sirve en un plato hondo con un surco en el centro.",
+                "Vierte aceite de oliva y espolvorea pimentón.",
+                "Acompaña con los vegetales en bastones."
+            ),
+            tags = listOf("vegano", "mediterráneo", "merienda", "alto proteína"),
+            protein = 8, carbs = 24, fat = 12, rating = 4.8f
+        ),
+        Recipe(
+            id = 14,
+            name = "Muffins de Plátano y Avena",
+            description = "Muffins saludables sin azúcar añadida con plátano maduro y avena.",
+            imageEmoji = "🧁",
+            calories = 180,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 22,
+            servings = 8,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.SNACK,
+            dietTypes = listOf(DietType.VEGETARIAN, DietType.DAIRY_FREE),
+            ingredients = listOf(
+                "3 plátanos maduros",
+                "2 tazas de avena en hojuelas",
+                "2 huevos",
+                "1/4 taza de miel o maple syrup",
+                "1 cucharadita de vainilla",
+                "1 cucharadita de canela",
+                "1 cucharadita de polvo de hornear",
+                "1/4 taza de chips de chocolate oscuro",
+                "Pizca de sal"
+            ),
+            steps = listOf(
+                "Precalienta el horno a 180°C.",
+                "Machaca los plátanos hasta obtener puré.",
+                "Mezcla con los huevos, miel y vainilla.",
+                "Incorpora la avena, canela, polvo de hornear y sal.",
+                "Añade los chips de chocolate.",
+                "Vierte en moldes para muffin engrasados.",
+                "Hornea 20-22 minutos hasta que doren.",
+                "Enfría 10 minutos antes de desmoldar."
+            ),
+            tags = listOf("vegetariano", "sin azúcar añadida", "merienda", "hornear"),
+            protein = 5, carbs = 32, fat = 4, rating = 4.6f
+        ),
+
+        // POSTRES
+        Recipe(
+            id = 15,
+            name = "Mousse de Chocolate Negro",
+            description = "Mousse de chocolate oscuro sin azúcar refinada, ligero y cremoso.",
+            imageEmoji = "🍫",
+            calories = 280,
+            prepTimeMinutes = 20,
+            cookTimeMinutes = 5,
+            servings = 4,
+            difficulty = Difficulty.MEDIUM,
+            category = RecipeCategory.DESSERT,
+            dietTypes = listOf(DietType.VEGETARIAN, DietType.GLUTEN_FREE),
+            ingredients = listOf(
+                "200g de chocolate negro 70%",
+                "4 huevos separados",
+                "3 cucharadas de eritritol o miel",
+                "1 cucharadita de vainilla",
+                "Pizca de sal",
+                "Fresas para decorar",
+                "Menta fresca"
+            ),
+            steps = listOf(
+                "Derrite el chocolate a baño maría.",
+                "Mezcla las yemas con el endulzante y vainilla.",
+                "Incorpora al chocolate derretido.",
+                "Bate las claras con la pizca de sal a punto de nieve.",
+                "Incorpora las claras al chocolate en movimientos envolventes.",
+                "Distribuye en copas individuales.",
+                "Refrigera al menos 2 horas.",
+                "Sirve con fresas y menta."
+            ),
+            tags = listOf("postre", "sin gluten", "chocolate", "vegetal"),
+            protein = 10, carbs = 24, fat = 18, rating = 4.9f
+        ),
+        Recipe(
+            id = 16,
+            name = "Helado de Mango sin Azúcar",
+            description = "Helado cremoso de mango hecho solo con fruta congelada.",
+            imageEmoji = "🍦",
+            calories = 120,
+            prepTimeMinutes = 10,
+            cookTimeMinutes = 0,
+            servings = 2,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.DESSERT,
+            dietTypes = listOf(DietType.VEGAN, DietType.VEGETARIAN, DietType.GLUTEN_FREE, DietType.DAIRY_FREE, DietType.PALEO),
+            ingredients = listOf(
+                "3 mangos maduros congelados en cubos",
+                "Jugo de 1/2 limón",
+                "1 cucharadita de jengibre rallado (opcional)",
+                "2 cucharadas de leche de coco (opcional)"
+            ),
+            steps = listOf(
+                "Congela los cubos de mango al menos 4 horas.",
+                "Procesa en licuadora o procesador hasta cremoso.",
+                "Si está muy duro, agrega la leche de coco.",
+                "Añade el limón y el jengibre.",
+                "Sirve inmediatamente como soft serve.",
+                "O congela 1 hora más para textura más firme."
+            ),
+            tags = listOf("vegano", "sin azúcar", "postre", "fruta"),
+            protein = 2, carbs = 28, fat = 1, rating = 4.7f
+        ),
+
+        // BEBIDAS
+        Recipe(
+            id = 17,
+            name = "Agua de Jamaica con Jengibre",
+            description = "Bebida refrescante de flor de jamaica con toque de jengibre y limón.",
+            imageEmoji = "🌺",
+            calories = 45,
+            prepTimeMinutes = 5,
+            cookTimeMinutes = 10,
+            servings = 6,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.DRINK,
+            dietTypes = listOf(DietType.VEGAN, DietType.VEGETARIAN, DietType.GLUTEN_FREE, DietType.DAIRY_FREE, DietType.KETO),
+            ingredients = listOf(
+                "1 taza de flores de jamaica secas",
+                "8 tazas de agua",
+                "5cm de jengibre fresco en rodajas",
+                "Endulzante al gusto (stevia o miel)",
+                "Jugo de 1 limón",
+                "Hielo",
+                "Hojas de menta"
+            ),
+            steps = listOf(
+                "Hierve 4 tazas de agua con el jengibre por 5 minutos.",
+                "Agrega las flores de jamaica.",
+                "Apaga el fuego y deja reposar 10 minutos.",
+                "Cuela y mezcla con el resto del agua fría.",
+                "Endulza al gusto.",
+                "Agrega el jugo de limón.",
+                "Sirve sobre hielo con menta."
+            ),
+            tags = listOf("bebida", "sin azúcar", "antioxidante", "refrescante"),
+            protein = 0, carbs = 12, fat = 0, rating = 4.6f
+        ),
+        Recipe(
+            id = 18,
+            name = "Smoothie Proteico de Fresa",
+            description = "Batido alto en proteínas con fresa, proteína en polvo y leche de almendras.",
+            imageEmoji = "🍓",
+            calories = 310,
+            prepTimeMinutes = 5,
+            cookTimeMinutes = 0,
+            servings = 1,
+            difficulty = Difficulty.EASY,
+            category = RecipeCategory.DRINK,
+            dietTypes = listOf(DietType.VEGETARIAN, DietType.GLUTEN_FREE, DietType.HIGH_PROTEIN, DietType.LOW_CARB),
+            ingredients = listOf(
+                "1 taza de fresas congeladas",
+                "1 scoop de proteína de vainilla",
+                "1 taza de leche de almendras sin azúcar",
+                "1/2 taza de yogur griego 0%",
+                "1 cucharada de semillas de chía",
+                "Hielo al gusto"
+            ),
+            steps = listOf(
+                "Coloca todos los ingredientes en la licuadora.",
+                "Licúa a velocidad alta hasta obtener textura suave.",
+                "Si está muy espeso, agrega más leche.",
+                "Prueba y ajusta dulzor.",
+                "Sirve inmediatamente en un vaso alto.",
+                "Decora con una fresa y las semillas de chía."
+            ),
+            tags = listOf("alto proteína", "gym", "batido", "sin gluten"),
+            protein = 32, carbs = 22, fat = 6, rating = 4.7f
+        )
+    )
+}

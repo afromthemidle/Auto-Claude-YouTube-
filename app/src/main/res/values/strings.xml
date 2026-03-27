@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RecipeDiet</string>
+    <string name="tab_home">Inicio</string>
+    <string name="tab_favorites">Favoritos</string>
+    <string name="tab_profile">Mi Perfil</string>
+    <string name="search_hint">Buscar recetas...</string>
+    <string name="calories_label">kcal</string>
+    <string name="time_label">min</string>
+    <string name="difficulty_easy">Fácil</string>
+    <string name="difficulty_medium">Medio</string>
+    <string name="difficulty_hard">Difícil</string>
+    <string name="save_recipe">Guardar receta</string>
+    <string name="saved_recipe">Guardado ✓</string>
+    <string name="ingredients_title">Ingredientes</string>
+    <string name="steps_title">Preparación</string>
+    <string name="profile_saved">¡Perfil actualizado!</string>
+    <string name="no_favorites">Aún no tienes favoritos</string>
+    <string name="no_recipes_found">No se encontraron recetas</string>
+</resources>
