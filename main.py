@@ -24,6 +24,7 @@ from podcast_generator import run_episode_generation
 from youtube_uploader import check_youtube_auth, get_channel_info, start_oauth_flow, finish_oauth_flow
 
 # ── Logging ──────────────────────────────────────────────────────────────────
+Path("logs").mkdir(exist_ok=True)  # MUST exist before FileHandler
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -64,12 +65,10 @@ async def scheduled_generation():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestiona el ciclo de vida de la aplicación."""
-    # Crear directorio de logs
     Path("logs").mkdir(exist_ok=True)
     Path("output").mkdir(exist_ok=True)
     Path("assets").mkdir(exist_ok=True)
 
-    # Configurar horario desde .env
     hour = int(os.getenv("SCHEDULE_HOUR", "23"))
     minute = int(os.getenv("SCHEDULE_MINUTE", "20"))
 
@@ -79,7 +78,7 @@ async def lifespan(app: FastAPI):
         id="daily_podcast",
         name=f"Generar episodio diario a las {hour:02d}:{minute:02d}",
         replace_existing=True,
-        misfire_grace_time=3600,  # 1 hora de tolerancia
+        misfire_grace_time=3600,
     )
     scheduler.start()
     logger.info(f"⏰ Scheduler iniciado - próxima ejecución: {hour:02d}:{minute:02d} diario")
@@ -127,8 +126,8 @@ async def get_status():
         "schedule_time": f"{hour:02d}:{minute:02d}",
         "youtube_auth": check_youtube_auth(),
         "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
-        "tts_voice": os.getenv("TTS_VOICE", "es-ES-AlvaroNeural"),
-        "tts_engine": "edge-tts (gratuito)",
+        "tts_voice": os.getenv("TTS_VOICE", "onyx"),
+        "tts_engine": "OpenAI TTS",
         "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
 
