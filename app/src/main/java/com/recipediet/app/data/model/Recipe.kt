@@ -1,13 +1,9 @@
 package com.recipediet.app.data.model
 
-import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
 @Entity(tableName = "recipes")
 @TypeConverters(ListConverters::class)
 data class Recipe(
@@ -30,7 +26,7 @@ data class Recipe(
     val protein: Int = 0,
     val carbs: Int = 0,
     val fat: Int = 0
-) : Parcelable
+)
 
 enum class Difficulty(val displayName: String) {
     EASY("Fácil"),

@@ -21,23 +21,36 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: >-
+            tools
+            platform-tools
+            build-tools;34.0.0
+            platforms;android-34
+
+      - name: Aceptar licencias del SDK
+        run: yes | sdkmanager --licenses || true
 
       - name: Hacer ejecutable gradlew
         run: chmod +x ./gradlew
-        working-directory: .
 
-      - name: Verificar ambiente
-        run: |
-          java -version
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ./gradlew --version
+      - name: Cache de Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Compilar APK Debug
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
       - name: Subir APK como artefacto
         uses: actions/upload-artifact@v4
@@ -46,9 +59,9 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
-      - name: Mostrar info del APK
+      - name: Info del APK generado
         run: |
-          echo "✅ APK generado exitosamente"
+          echo "✅ Build exitoso"
           ls -lh app/build/outputs/apk/debug/
 
   release:
@@ -66,16 +79,34 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: >-
+            tools
+            platform-tools
+            build-tools;34.0.0
+            platforms;android-34
+
+      - name: Aceptar licencias del SDK
+        run: yes | sdkmanager --licenses || true
 
       - name: Hacer ejecutable gradlew
         run: chmod +x ./gradlew
 
+      - name: Cache de Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Compilar APK Release (sin firma)
-        run: ./gradlew assembleRelease --stacktrace
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Subir APK Release como artefacto
         uses: actions/upload-artifact@v4

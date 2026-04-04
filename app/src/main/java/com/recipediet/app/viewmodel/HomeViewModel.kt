@@ -1,8 +1,12 @@
 package com.recipediet.app.viewmodel
 
 import android.app.Application
-import androidx.lifecycle.*
-import com.recipediet.app.data.model.DietType
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import com.recipediet.app.data.model.Recipe
 import com.recipediet.app.data.model.RecipeCategory
 import com.recipediet.app.data.repository.RecipeRepository
@@ -19,28 +23,35 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     val userProfile = MutableLiveData(userRepo.getUserProfile())
 
-    val recipes: LiveData<List<Recipe>> = MediatorLiveData<List<Recipe>>().apply {
-        fun update() {
-            val query = _searchQuery.value ?: ""
+    private val allRecipes: LiveData<List<Recipe>> = recipeRepo.allRecipes
+
+    // Static sources only — no dynamic addSource inside observers
+    val recipes: LiveData<List<Recipe>> = MediatorLiveData<List<Recipe>>().also { mediator ->
+        fun recompute() {
+            val all = allRecipes.value ?: return
+            val query = _searchQuery.value.orEmpty()
             val category = _selectedCategory.value
             val diet = userProfile.value?.dietType
-
-            val source = if (query.isNotBlank()) {
-                recipeRepo.searchRecipes(query)
+            mediator.value = if (query.isNotBlank()) {
+                all.filter { r ->
+                    r.name.contains(query, ignoreCase = true) ||
+                    r.description.contains(query, ignoreCase = true) ||
+                    r.tags.any { it.contains(query, ignoreCase = true) }
+                }
             } else {
-                recipeRepo.getFilteredRecipes(diet, category)
+                all.filter { r ->
+                    (diet == null || r.dietTypes.contains(diet)) &&
+                    (category == null || r.category == category)
+                }
             }
-
-            addSource(source) { value = it }
         }
-
-        addSource(_searchQuery) { update() }
-        addSource(_selectedCategory) { update() }
-        addSource(userProfile) { update() }
-        update()
+        mediator.addSource(allRecipes) { recompute() }
+        mediator.addSource(_searchQuery) { recompute() }
+        mediator.addSource(_selectedCategory) { recompute() }
+        mediator.addSource(userProfile) { recompute() }
     }
 
-    val featuredRecipes: LiveData<List<Recipe>> = recipeRepo.allRecipes.map { list ->
+    val featuredRecipes: LiveData<List<Recipe>> = allRecipes.map { list ->
         list.sortedByDescending { it.rating }.take(5)
     }
 
